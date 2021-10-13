@@ -4,21 +4,18 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/abednarchuk/grpc_auth/auth_backend/errors"
 	"golang.org/x/crypto/bcrypt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
-
-var InternalServerError = status.Errorf(codes.Internal, "Internal server error")
 
 func HashPassword(password string) (string, error) {
 	bcryptCost, err := strconv.Atoi(os.Getenv("BCRYPT_COST"))
 	if err != nil {
-		return "", InternalServerError
+		return "", errors.InternalServerError
 	}
 	res, err := bcrypt.GenerateFromPassword([]byte(password), bcryptCost)
 	if err != nil {
-		return "", InternalServerError
+		return "", errors.InternalServerError
 	}
 	return string(res), nil
 }

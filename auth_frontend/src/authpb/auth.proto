@@ -3,24 +3,19 @@ syntax = "proto3";
 package auth;
 option go_package="github.com/abednarchuk/grpc_auth/auth_backend/authpb";
 
+message User {
+  string id = 1;
+  string user_name = 2;
+  string email = 3;
+  string password = 4;
+}
+
 message SignupRequest {
-  string email = 1;
-  string password = 2;
+  User user = 1;
 }
 
 message SignupResponse {
-  ResponseStatus response_status = 1;
-  repeated SignupError signup_errors = 2;
-  string response = 3;
-}
-
-message SignupError{
-  string error_message = 1;
-}
-
-enum ResponseStatus{
-  STATUS_FAIL = 0;
-  STATUS_SUCCESS = 1;
+  User user = 1;
 }
 
 service SignupService{

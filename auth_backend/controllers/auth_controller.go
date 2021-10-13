@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/abednarchuk/grpc_auth/auth_backend/errors"
 	"github.com/abednarchuk/grpc_auth/auth_backend/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,7 +28,7 @@ func (ac *AuthController) SignUp(ctx context.Context, user *models.User) (*primi
 
 	res, err := usersCollection.InsertOne(ctx, user)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("Internal error: %v", err))
+		return nil, errors.InternalServerError
 	}
 
 	oid, ok := res.InsertedID.(primitive.ObjectID)

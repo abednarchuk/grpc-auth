@@ -2,12 +2,41 @@ import * as jspb from 'google-protobuf'
 
 
 
-export class SignupRequest extends jspb.Message {
+export class User extends jspb.Message {
+  getId(): string;
+  setId(value: string): User;
+
+  getUserName(): string;
+  setUserName(value: string): User;
+
   getEmail(): string;
-  setEmail(value: string): SignupRequest;
+  setEmail(value: string): User;
 
   getPassword(): string;
-  setPassword(value: string): SignupRequest;
+  setPassword(value: string): User;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): User.AsObject;
+  static toObject(includeInstance: boolean, msg: User): User.AsObject;
+  static serializeBinaryToWriter(message: User, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): User;
+  static deserializeBinaryFromReader(message: User, reader: jspb.BinaryReader): User;
+}
+
+export namespace User {
+  export type AsObject = {
+    id: string,
+    userName: string,
+    email: string,
+    password: string,
+  }
+}
+
+export class SignupRequest extends jspb.Message {
+  getUser(): User | undefined;
+  setUser(value?: User): SignupRequest;
+  hasUser(): boolean;
+  clearUser(): SignupRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): SignupRequest.AsObject;
@@ -19,22 +48,15 @@ export class SignupRequest extends jspb.Message {
 
 export namespace SignupRequest {
   export type AsObject = {
-    email: string,
-    password: string,
+    user?: User.AsObject,
   }
 }
 
 export class SignupResponse extends jspb.Message {
-  getResponseStatus(): ResponseStatus;
-  setResponseStatus(value: ResponseStatus): SignupResponse;
-
-  getSignupErrorsList(): Array<SignupError>;
-  setSignupErrorsList(value: Array<SignupError>): SignupResponse;
-  clearSignupErrorsList(): SignupResponse;
-  addSignupErrors(value?: SignupError, index?: number): SignupError;
-
-  getResponse(): string;
-  setResponse(value: string): SignupResponse;
+  getUser(): User | undefined;
+  setUser(value?: User): SignupResponse;
+  hasUser(): boolean;
+  clearUser(): SignupResponse;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): SignupResponse.AsObject;
@@ -46,31 +68,7 @@ export class SignupResponse extends jspb.Message {
 
 export namespace SignupResponse {
   export type AsObject = {
-    responseStatus: ResponseStatus,
-    signupErrorsList: Array<SignupError.AsObject>,
-    response: string,
+    user?: User.AsObject,
   }
 }
 
-export class SignupError extends jspb.Message {
-  getErrorMessage(): string;
-  setErrorMessage(value: string): SignupError;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): SignupError.AsObject;
-  static toObject(includeInstance: boolean, msg: SignupError): SignupError.AsObject;
-  static serializeBinaryToWriter(message: SignupError, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): SignupError;
-  static deserializeBinaryFromReader(message: SignupError, reader: jspb.BinaryReader): SignupError;
-}
-
-export namespace SignupError {
-  export type AsObject = {
-    errorMessage: string,
-  }
-}
-
-export enum ResponseStatus { 
-  STATUS_FAIL = 0,
-  STATUS_SUCCESS = 1,
-}

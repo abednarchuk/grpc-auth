@@ -38,6 +38,7 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 		return nil, err
 	}
 	newUser.Password = encryptedPassword
+
 	ac := controllers.NewAuthController(s.mongoClient)
 	oid, err := ac.SignUp(ctx, newUser)
 	if err != nil {
