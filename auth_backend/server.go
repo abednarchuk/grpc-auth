@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 
 	"github.com/abednarchuk/grpc_auth/auth_backend/authpb"
 	"github.com/abednarchuk/grpc_auth/auth_backend/controllers"
+	"github.com/abednarchuk/grpc_auth/auth_backend/helpers"
 	"github.com/abednarchuk/grpc_auth/auth_backend/models"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,30 +21,36 @@ type server struct {
 
 func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb.SignupResponse, error) {
 	log.Println("SignUp func was invoked with req: ", req)
-	err := s.mongoClient.Ping(context.TODO(), nil)
-	if err != nil {
-		log.Fatalln(err)
+	user := req.GetUser()
+
+	newUser := &models.User{
+		UserName: user.GetUserName(),
+		Email:    user.GetEmail(),
+		Password: user.GetPassword(),
 	}
-	log.Println("Ping successful")
+	// TODO: Validate fields in new User
+
+	// TODO: Check if fields are available in database
+
+	// TODO: Encrypt password
+	encryptedPassword, err := helpers.HashPassword(newUser.Password)
+	if err != nil {
+		return nil, err
+	}
+	newUser.Password = encryptedPassword
 	ac := controllers.NewAuthController(s.mongoClient)
-	user := &models.User{
-		Email:    req.GetEmail(),
-		Password: req.GetPassword(),
-	}
-	res, err := ac.CreateUser(user)
+	oid, err := ac.SignUp(ctx, newUser)
 	if err != nil {
-		return &authpb.SignupResponse{
-			ResponseStatus: authpb.ResponseStatus_STATUS_FAIL,
-			SignupErrors: []*authpb.SignupError{
-				{
-					ErrorMessage: err.Error(),
-				},
-			}}, err
+		return nil, err
 	}
+	newUser.ID = *oid
 
 	return &authpb.SignupResponse{
-		ResponseStatus: authpb.ResponseStatus_STATUS_SUCCESS,
-		Response:       fmt.Sprintf("%s", res.InsertedID),
+		User: &authpb.User{
+			Id:       newUser.ID.Hex(),
+			UserName: newUser.UserName,
+			Email:    newUser.Email,
+		},
 	}, nil
 }
 
