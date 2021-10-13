@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  auth_backend:
+    container_name: auth_backend
+    build: ./auth_backend
+    volumes:
+    - ./auth_backend:/auth_backend
+    env_file:
+      - ./auth_backend/auth_backend.env
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    env_file:
+      - ./mongo/mongo.env
+    volumes:
+      - data:/data/db
+volumes:
+  data:
