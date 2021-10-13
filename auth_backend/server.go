@@ -65,7 +65,7 @@ func main() {
 }
 
 func getMongoClient() *mongo.Client {
-	clientOptions := options.Client().ApplyURI("mongodb://mongo")
+	clientOptions := options.Client().ApplyURI("mongodb://root:secret@mongo")
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatalln(err)
