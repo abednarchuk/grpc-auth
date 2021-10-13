@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
 	"github.com/abednarchuk/grpc_auth/auth_backend/authpb"
+	"github.com/abednarchuk/grpc_auth/auth_backend/controllers"
+	"github.com/abednarchuk/grpc_auth/auth_backend/models"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
@@ -23,7 +26,26 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 		log.Fatalln(err)
 	}
 	log.Println("Ping successful")
-	return &authpb.SignupResponse{}, nil
+	ac := controllers.NewAuthController(s.mongoClient)
+	user := &models.User{
+		Email:    req.GetEmail(),
+		Password: req.GetPassword(),
+	}
+	res, err := ac.CreateUser(user)
+	if err != nil {
+		return &authpb.SignupResponse{
+			ResponseStatus: authpb.ResponseStatus_STATUS_FAIL,
+			SignupErrors: []*authpb.SignupError{
+				{
+					ErrorMessage: err.Error(),
+				},
+			}}, err
+	}
+
+	return &authpb.SignupResponse{
+		ResponseStatus: authpb.ResponseStatus_STATUS_SUCCESS,
+		Response:       fmt.Sprintf("%s", res.InsertedID),
+	}, nil
 }
 
 func main() {
