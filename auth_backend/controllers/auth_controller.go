@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/abednarchuk/grpc_auth/auth_backend/errors"
@@ -28,6 +29,7 @@ func (ac *AuthController) SignUp(ctx context.Context, user *models.User) (*primi
 
 	res, err := usersCollection.InsertOne(ctx, user)
 	if err != nil {
+		log.Println(err)
 		return nil, errors.InternalServerError
 	}
 

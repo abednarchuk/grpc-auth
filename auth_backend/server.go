@@ -4,11 +4,13 @@ import (
 	"context"
 	"log"
 	"net"
+	"strings"
 
 	"github.com/abednarchuk/grpc_auth/auth_backend/authpb"
 	"github.com/abednarchuk/grpc_auth/auth_backend/controllers"
 	"github.com/abednarchuk/grpc_auth/auth_backend/helpers"
 	"github.com/abednarchuk/grpc_auth/auth_backend/models"
+	"github.com/abednarchuk/grpc_auth/auth_backend/validators"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
@@ -22,13 +24,16 @@ type server struct {
 func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb.SignupResponse, error) {
 	log.Println("SignUp func was invoked with req: ", req)
 	user := req.GetUser()
-
 	newUser := &models.User{
-		UserName: user.GetUserName(),
-		Email:    user.GetEmail(),
+		UserName: strings.ToLower(user.GetUserName()),
+		Email:    strings.ToLower(user.GetEmail()),
 		Password: user.GetPassword(),
 	}
 	// TODO: Validate fields in new User
+	err := validators.ValidateUser(newUser)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO: Check if fields are available in database
 
