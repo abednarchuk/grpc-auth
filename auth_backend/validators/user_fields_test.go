@@ -26,3 +26,48 @@ func TestValidateUserName(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateEmail(t *testing.T) {
+	t.Run("Test valid email", func(t *testing.T) {
+		emails := []string{"use@test.com", "user@user", "user.kappa@te.com"}
+		for _, email := range emails {
+			got := ValidateEmail(email)
+			want := true
+			if got != want {
+				t.Errorf("%q: got %v, want %v", email, got, want)
+			}
+		}
+	})
+	t.Run("Test invalid email", func(t *testing.T) {
+		emails := []string{"use@", "@user", "user a@te.com"}
+		for _, email := range emails {
+			got := ValidateEmail(email)
+			want := false
+			if got != want {
+				t.Errorf("%q: got %v, want %v", email, got, want)
+			}
+		}
+	})
+}
+func TestValidatePassword(t *testing.T) {
+	t.Run("Test valid password", func(t *testing.T) {
+		passwords := []string{"secret1"}
+		for _, password := range passwords {
+			got := ValidatePassword(password)
+			want := true
+			if got != want {
+				t.Errorf("%q: got %v, want %v", password, got, want)
+			}
+		}
+	})
+	t.Run("Test invalid password", func(t *testing.T) {
+		passwords := []string{"123"}
+		for _, password := range passwords {
+			got := ValidatePassword(password)
+			want := false
+			if got != want {
+				t.Errorf("%q: got %v, want %v", password, got, want)
+			}
+		}
+	})
+}

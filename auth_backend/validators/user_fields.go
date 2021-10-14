@@ -17,8 +17,8 @@ func ValidateUserName(username string) bool {
 
 // Returns true if Email is valid
 func ValidateEmail(email string) bool {
-	emailRegexp := regexp.MustCompile(`[^@ \t\r\n]+@[^@ \t\r\n]`)
-	return emailRegexp.Match([]byte(email))
+	emailRegexp := regexp.MustCompile(`^[a-zA-Z0-9.!#$%&’*+/=?^_\x60{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$`)
+	return emailRegexp.MatchString(email)
 }
 func ValidatePassword(password string) bool {
 	passwordLength := utf8.RuneCountInString(password)
