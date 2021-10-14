@@ -29,7 +29,7 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 		Email:    strings.ToLower(user.GetEmail()),
 		Password: user.GetPassword(),
 	}
-	// TODO: Validate fields in new User
+	// Validation
 	err := validators.ValidateUser(newUser)
 	if err != nil {
 		return nil, err
