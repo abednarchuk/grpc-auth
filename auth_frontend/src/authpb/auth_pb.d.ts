@@ -72,3 +72,57 @@ export namespace SignupResponse {
   }
 }
 
+export class UsernameAvailabilityRequest extends jspb.Message {
+  getUsername(): string;
+  setUsername(value: string): UsernameAvailabilityRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UsernameAvailabilityRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UsernameAvailabilityRequest): UsernameAvailabilityRequest.AsObject;
+  static serializeBinaryToWriter(message: UsernameAvailabilityRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UsernameAvailabilityRequest;
+  static deserializeBinaryFromReader(message: UsernameAvailabilityRequest, reader: jspb.BinaryReader): UsernameAvailabilityRequest;
+}
+
+export namespace UsernameAvailabilityRequest {
+  export type AsObject = {
+    username: string,
+  }
+}
+
+export class EmailAvailabilityRequest extends jspb.Message {
+  getEmail(): string;
+  setEmail(value: string): EmailAvailabilityRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): EmailAvailabilityRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: EmailAvailabilityRequest): EmailAvailabilityRequest.AsObject;
+  static serializeBinaryToWriter(message: EmailAvailabilityRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): EmailAvailabilityRequest;
+  static deserializeBinaryFromReader(message: EmailAvailabilityRequest, reader: jspb.BinaryReader): EmailAvailabilityRequest;
+}
+
+export namespace EmailAvailabilityRequest {
+  export type AsObject = {
+    email: string,
+  }
+}
+
+export class AvailabilityResponse extends jspb.Message {
+  getAvailable(): boolean;
+  setAvailable(value: boolean): AvailabilityResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AvailabilityResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: AvailabilityResponse): AvailabilityResponse.AsObject;
+  static serializeBinaryToWriter(message: AvailabilityResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AvailabilityResponse;
+  static deserializeBinaryFromReader(message: AvailabilityResponse, reader: jspb.BinaryReader): AvailabilityResponse;
+}
+
+export namespace AvailabilityResponse {
+  export type AsObject = {
+    available: boolean,
+  }
+}
+

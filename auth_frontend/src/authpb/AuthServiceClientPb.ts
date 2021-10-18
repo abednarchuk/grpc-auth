@@ -75,5 +75,85 @@ export class SignupServiceClient {
     this.methodInfoSignUp);
   }
 
+  methodInfoIsUsernameAvailable = new grpcWeb.AbstractClientBase.MethodInfo(
+    auth_pb.AvailabilityResponse,
+    (request: auth_pb.UsernameAvailabilityRequest) => {
+      return request.serializeBinary();
+    },
+    auth_pb.AvailabilityResponse.deserializeBinary
+  );
+
+  isUsernameAvailable(
+    request: auth_pb.UsernameAvailabilityRequest,
+    metadata: grpcWeb.Metadata | null): Promise<auth_pb.AvailabilityResponse>;
+
+  isUsernameAvailable(
+    request: auth_pb.UsernameAvailabilityRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.Error,
+               response: auth_pb.AvailabilityResponse) => void): grpcWeb.ClientReadableStream<auth_pb.AvailabilityResponse>;
+
+  isUsernameAvailable(
+    request: auth_pb.UsernameAvailabilityRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.Error,
+               response: auth_pb.AvailabilityResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/auth.SignupService/IsUsernameAvailable',
+        request,
+        metadata || {},
+        this.methodInfoIsUsernameAvailable,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/auth.SignupService/IsUsernameAvailable',
+    request,
+    metadata || {},
+    this.methodInfoIsUsernameAvailable);
+  }
+
+  methodInfoIsEmailAvailable = new grpcWeb.AbstractClientBase.MethodInfo(
+    auth_pb.AvailabilityResponse,
+    (request: auth_pb.EmailAvailabilityRequest) => {
+      return request.serializeBinary();
+    },
+    auth_pb.AvailabilityResponse.deserializeBinary
+  );
+
+  isEmailAvailable(
+    request: auth_pb.EmailAvailabilityRequest,
+    metadata: grpcWeb.Metadata | null): Promise<auth_pb.AvailabilityResponse>;
+
+  isEmailAvailable(
+    request: auth_pb.EmailAvailabilityRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.Error,
+               response: auth_pb.AvailabilityResponse) => void): grpcWeb.ClientReadableStream<auth_pb.AvailabilityResponse>;
+
+  isEmailAvailable(
+    request: auth_pb.EmailAvailabilityRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.Error,
+               response: auth_pb.AvailabilityResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/auth.SignupService/IsEmailAvailable',
+        request,
+        metadata || {},
+        this.methodInfoIsEmailAvailable,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/auth.SignupService/IsEmailAvailable',
+    request,
+    metadata || {},
+    this.methodInfoIsEmailAvailable);
+  }
+
 }
 

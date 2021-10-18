@@ -18,6 +18,17 @@ message SignupResponse {
   User user = 1;
 }
 
+message UsernameAvailabilityRequest {
+  string username = 1;
+}
+message EmailAvailabilityRequest {
+  string email = 1;
+}
+message AvailabilityResponse {
+  bool available = 1;
+}
 service SignupService{
   rpc SignUp(SignupRequest) returns (SignupResponse){};
+  rpc IsUsernameAvailable(UsernameAvailabilityRequest) returns (AvailabilityResponse){};
+  rpc IsEmailAvailable(EmailAvailabilityRequest) returns (AvailabilityResponse){};
 }
