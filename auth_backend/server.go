@@ -8,38 +8,47 @@ import (
 	"time"
 
 	"github.com/abednarchuk/grpc_auth/auth_backend/authpb"
-	"github.com/abednarchuk/grpc_auth/auth_backend/controllers"
+	"github.com/abednarchuk/grpc_auth/auth_backend/errors"
 	"github.com/abednarchuk/grpc_auth/auth_backend/helpers"
 	"github.com/abednarchuk/grpc_auth/auth_backend/models"
+	"github.com/abednarchuk/grpc_auth/auth_backend/mongohelper"
 	"github.com/abednarchuk/grpc_auth/auth_backend/validators"
-	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type server struct {
-	mongoClient *mongo.Client
 	authpb.UnimplementedSignupServiceServer
 }
 
+func main() {
+	lis, err := net.Listen("tcp", "0.0.0.0:50051")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	grpcServer := grpc.NewServer()
+	server := &server{}
+	mongohelper.InitializeMongoHelper()
+
+	authpb.RegisterSignupServiceServer(grpcServer, server)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalln(err)
+	}
+}
+
 func (s *server) IsUsernameAvailable(ctx context.Context, req *authpb.UsernameAvailabilityRequest) (*authpb.AvailabilityResponse, error) {
-	log.Println("IsUsernameAvailable func was invoked with req: ", req)
 	username := req.GetUsername()
-	ac := controllers.NewAuthController(s.mongoClient)
-	r := ac.CheckIfUsernameAvailable(ctx, username)
+	r := helpers.CheckIfUsernameAvailable(ctx, username)
 	return &authpb.AvailabilityResponse{Available: r}, nil
 }
 func (s *server) IsEmailAvailable(ctx context.Context, req *authpb.EmailAvailabilityRequest) (*authpb.AvailabilityResponse, error) {
-	log.Println("IsEmailAvailable func was invoked with req: ", req)
 	email := req.GetEmail()
-	ac := controllers.NewAuthController(s.mongoClient)
-	r := ac.CheckIfEmailAvailable(ctx, email)
+	r := helpers.CheckIfEmailAvailable(ctx, email)
 	return &authpb.AvailabilityResponse{Available: r}, nil
 }
 
 func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb.SignupResponse, error) {
-	log.Println("SignUp func was invoked with req: ", req)
 	user := req.GetUser()
 	newUser := &models.User{
 		UserName:   strings.ToLower(user.GetUserName()),
@@ -55,27 +64,32 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 	}
 
 	// TODO: Check if fields are available in database
-	ac := controllers.NewAuthController(s.mongoClient)
-	emailAvailable := ac.CheckIfEmailAvailable(ctx, newUser.Email)
+	emailAvailable := helpers.CheckIfEmailAvailable(ctx, newUser.Email)
 	if !emailAvailable {
 		return nil, status.Error(codes.AlreadyExists, "Email already in use")
 	}
-	usernameAvailable := ac.CheckIfUsernameAvailable(ctx, newUser.UserName)
+	usernameAvailable := helpers.CheckIfUsernameAvailable(ctx, newUser.UserName)
 	if !usernameAvailable {
 		return nil, status.Error(codes.AlreadyExists, "Username already in use")
 	}
 	// TODO: Encrypt password
-	encryptedPassword, err := helpers.HashPassword(newUser.Password)
+	err = newUser.HashPassword()
 	if err != nil {
 		return nil, err
 	}
-	newUser.Password = encryptedPassword
 
-	oid, err := ac.CreateUser(ctx, newUser)
+	oid, err := newUser.CreateUser(ctx)
 	if err != nil {
 		return nil, err
 	}
-	newUser.ID = *oid
+	newUser.ID = oid
+	// Generate token
+	token, err := models.GenerateToken(oid, time.Hour*168, models.ScopeAuthentication)
+	if err != nil {
+		return nil, errors.InternalServerError
+	}
+
+	newUser.InsertToken(ctx, token)
 
 	return &authpb.SignupResponse{
 		User: &authpb.User{
@@ -83,22 +97,12 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 			UserName: newUser.UserName,
 			Email:    newUser.Email,
 		},
+		Token: &authpb.Token{
+			PlainText: token.PlainText,
+			UserId:    token.UserID.String(),
+			Hash:      token.Hash[:],
+			Expiry:    token.Expiry.Unix(),
+			Scope:     models.ScopeAuthentication,
+		},
 	}, nil
-}
-
-func main() {
-	lis, err := net.Listen("tcp", "0.0.0.0:50051")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	grpcServer := grpc.NewServer()
-	server := &server{
-		mongoClient: helpers.GetMongoClient(),
-	}
-
-	authpb.RegisterSignupServiceServer(grpcServer, server)
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalln(err)
-	}
 }

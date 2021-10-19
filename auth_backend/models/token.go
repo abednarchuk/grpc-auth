@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/base32"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -13,15 +15,15 @@ const (
 
 // Token is the type for authentication tokens
 type Token struct {
-	PlainText string
-	UserID    string
-	Hash      [32]byte
-	Expiry    time.Time
-	Scope     string
+	PlainText string             `bson:"plainText"`
+	UserID    primitive.ObjectID `bson:"userID"`
+	Hash      [32]byte           `bson:"hash"`
+	Expiry    time.Time          `bson:"expiry"`
+	Scope     string             `bson:"scope"`
 }
 
 // GenerateToken generates token that lasts for ttl, and returns it
-func GenerateToken(userID string, ttl time.Duration, scope string) (*Token, error) {
+func GenerateToken(userID primitive.ObjectID, ttl time.Duration, scope string) (*Token, error) {
 	token := &Token{
 		UserID: userID,
 		Expiry: time.Now().Add(ttl),

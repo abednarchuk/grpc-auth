@@ -2,40 +2,26 @@ package helpers
 
 import (
 	"context"
-	"log"
-	"os"
-	"strconv"
+	"time"
 
-	"github.com/abednarchuk/grpc_auth/auth_backend/errors"
+	"github.com/abednarchuk/grpc_auth/auth_backend/mongohelper"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/crypto/bcrypt"
 )
 
-// HashPassword hashes password and returns hash or error
-func HashPassword(password string) (string, error) {
-	bcryptCost, err := strconv.Atoi(os.Getenv("BCRYPT_COST"))
-	if err != nil {
-		return "", errors.InternalServerError
-	}
-	res, err := bcrypt.GenerateFromPassword([]byte(password), bcryptCost)
-	if err != nil {
-		return "", errors.InternalServerError
-	}
-	return string(res), nil
+func CheckIfUsernameAvailable(ctx context.Context, username string) bool {
+	userCollection := mongohelper.GetUsersCollection()
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	res := userCollection.FindOne(ctx, bson.D{{"username", username}, {}})
+	return res.Err() == mongo.ErrNoDocuments
 }
 
-// GetMongoClient returns a pointer to mongo client
-func GetMongoClient() *mongo.Client {
-	clientOptions := options.Client().ApplyURI("mongodb://root:secret@mongo")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return client
-}
-
-// GetUserCollection accepts a mongo client, and returns a user collection
-func GetUserCollection(c *mongo.Client) *mongo.Collection {
-	return c.Database("grpc-auth").Collection("users")
+// CheckIfEmailAvailable checks if email already exists in database, and returns true if it does, and false if not
+func CheckIfEmailAvailable(ctx context.Context, email string) bool {
+	userCollection := mongohelper.GetUsersCollection()
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	res := userCollection.FindOne(ctx, bson.D{{"email", email}})
+	return res.Err() == mongo.ErrNoDocuments
 }

@@ -9,6 +9,13 @@ message User {
   string email = 3;
   string password = 4;
 }
+message Token {
+  string plain_text = 1;
+  string user_id = 2;
+  bytes hash = 3;
+  int64 expiry = 4; //unix time
+  string scope = 5;
+}
 
 message SignupRequest {
   User user = 1;
@@ -16,6 +23,7 @@ message SignupRequest {
 
 message SignupResponse {
   User user = 1;
+  Token token = 2;
 }
 
 message UsernameAvailabilityRequest {
