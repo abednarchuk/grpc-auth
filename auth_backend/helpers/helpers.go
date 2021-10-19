@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// HashPassword hashes password and returns hash or error
 func HashPassword(password string) (string, error) {
 	bcryptCost, err := strconv.Atoi(os.Getenv("BCRYPT_COST"))
 	if err != nil {
@@ -24,6 +25,7 @@ func HashPassword(password string) (string, error) {
 	return string(res), nil
 }
 
+// GetMongoClient returns a pointer to mongo client
 func GetMongoClient() *mongo.Client {
 	clientOptions := options.Client().ApplyURI("mongodb://root:secret@mongo")
 	client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -33,6 +35,7 @@ func GetMongoClient() *mongo.Client {
 	return client
 }
 
+// GetUserCollection accepts a mongo client, and returns a user collection
 func GetUserCollection(c *mongo.Client) *mongo.Collection {
 	return c.Database("grpc-auth").Collection("users")
 }

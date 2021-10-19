@@ -11,8 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type AuthController struct {
@@ -23,7 +21,8 @@ func NewAuthController(c *mongo.Client) *AuthController {
 	return &AuthController{c}
 }
 
-func (ac *AuthController) SignUp(ctx context.Context, user *models.User) (*primitive.ObjectID, error) {
+// CreateUser creates user in db, and returns new userID or error
+func (ac *AuthController) CreateUser(ctx context.Context, user *models.User) (*primitive.ObjectID, error) {
 	usersCollection := helpers.GetUserCollection(ac.mongoClient)
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
@@ -36,12 +35,13 @@ func (ac *AuthController) SignUp(ctx context.Context, user *models.User) (*primi
 
 	oid, ok := res.InsertedID.(primitive.ObjectID)
 	if !ok {
-		return nil, status.Errorf(codes.Internal, "Cannot convert to OID")
+		return nil, errors.InternalServerError
 	}
 
 	return &oid, nil
 }
 
+// CheckIfUsernameAvailable checks if username already exists in database, and returns true if it does, and false if not
 func (ac *AuthController) CheckIfUsernameAvailable(ctx context.Context, username string) bool {
 	userCollection := helpers.GetUserCollection(ac.mongoClient)
 
@@ -51,6 +51,7 @@ func (ac *AuthController) CheckIfUsernameAvailable(ctx context.Context, username
 	return res.Err() == mongo.ErrNoDocuments
 }
 
+// CheckIfEmailAvailable checks if email already exists in database, and returns true if it does, and false if not
 func (ac *AuthController) CheckIfEmailAvailable(ctx context.Context, email string) bool {
 	userCollection := helpers.GetUserCollection(ac.mongoClient)
 

@@ -71,7 +71,7 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 	}
 	newUser.Password = encryptedPassword
 
-	oid, err := ac.SignUp(ctx, newUser)
+	oid, err := ac.CreateUser(ctx, newUser)
 	if err != nil {
 		return nil, err
 	}
