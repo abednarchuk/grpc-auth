@@ -6,21 +6,21 @@ import './App.css';
 
 function App() {
   let signupServiceClient = new SignupServiceClient('http://localhost:8000')
-  // const request = new SignupRequest()
-  // const user = new User()
-  // user.setUserName("abednarchuk")
-  // user.setEmail("andrii.bednarchuk@gmail.com")
-  // user.setPassword("secret")
-  // request.setUser(user)
-  // const metadata: grpcWeb.Metadata = {}
-  // useEffect(() => {
-  //   signupServiceClient.signUp(request, metadata, (err, res) => {
-  //     try {
-  //       console.log(err)
-  //       console.log(res)
-  //     } catch (err) { }
-  //   })
-  // }, [])
+  const request = new SignupRequest()
+  const user = new User()
+  user.setUserName("abednarchuk")
+  user.setEmail("andrii2.bednarchuk@gmail.com")
+  user.setPassword("secret123")
+  request.setUser(user)
+  const metadata: grpcWeb.Metadata = {}
+  useEffect(() => {
+    signupServiceClient.signUp(request, metadata, (err, res) => {
+      try {
+        console.log("err:", err)
+        console.log("response", res)
+      } catch (err) { }
+    })
+  }, [])
 
   // let username = "abednarchuk2"
   // const usernameAvailabilityRequest = new UsernameAvailabilityRequest()
@@ -35,17 +35,17 @@ function App() {
   // }, [])
 
 
-  let email = "andrii.bednarchuk@gmail.com"
-  const emailAvailabilityRequest = new EmailAvailabilityRequest()
-  emailAvailabilityRequest.setEmail(email)
-  useEffect(() => {
-    signupServiceClient.isEmailAvailable(emailAvailabilityRequest, {}, (err, res) => {
-      try {
-        console.log("Error:", err)
-        console.log("response:", res.getAvailable())
-      } catch (err) { }
-    })
-  }, [])
+  // let email = "andrii.bednarchuk@gmail.com"
+  // const emailAvailabilityRequest = new EmailAvailabilityRequest()
+  // emailAvailabilityRequest.setEmail(email)
+  // useEffect(() => {
+  //   signupServiceClient.isEmailAvailable(emailAvailabilityRequest, {}, (err, res) => {
+  //     try {
+  //       console.log("Error:", err)
+  //       console.log("response:", res.getAvailable())
+  //     } catch (err) { }
+  //   })
+  // }, [])
   return (
     <div>
       test

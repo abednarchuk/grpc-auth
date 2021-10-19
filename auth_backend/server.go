@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/abednarchuk/grpc_auth/auth_backend/authpb"
 	"github.com/abednarchuk/grpc_auth/auth_backend/controllers"
@@ -12,8 +13,9 @@ import (
 	"github.com/abednarchuk/grpc_auth/auth_backend/models"
 	"github.com/abednarchuk/grpc_auth/auth_backend/validators"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type server struct {
@@ -40,9 +42,11 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 	log.Println("SignUp func was invoked with req: ", req)
 	user := req.GetUser()
 	newUser := &models.User{
-		UserName: strings.ToLower(user.GetUserName()),
-		Email:    strings.ToLower(user.GetEmail()),
-		Password: user.GetPassword(),
+		UserName:   strings.ToLower(user.GetUserName()),
+		Email:      strings.ToLower(user.GetEmail()),
+		Password:   user.GetPassword(),
+		CreatedAt:  time.Now(),
+		ModifiedAt: time.Now(),
 	}
 	// Validation
 	err := validators.ValidateUser(newUser)
@@ -51,7 +55,15 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 	}
 
 	// TODO: Check if fields are available in database
-
+	ac := controllers.NewAuthController(s.mongoClient)
+	emailAvailable := ac.CheckIfEmailAvailable(ctx, newUser.Email)
+	if !emailAvailable {
+		return nil, status.Error(codes.AlreadyExists, "Email already in use")
+	}
+	usernameAvailable := ac.CheckIfUsernameAvailable(ctx, newUser.UserName)
+	if !usernameAvailable {
+		return nil, status.Error(codes.AlreadyExists, "Username already in use")
+	}
 	// TODO: Encrypt password
 	encryptedPassword, err := helpers.HashPassword(newUser.Password)
 	if err != nil {
@@ -59,7 +71,6 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 	}
 	newUser.Password = encryptedPassword
 
-	ac := controllers.NewAuthController(s.mongoClient)
 	oid, err := ac.SignUp(ctx, newUser)
 	if err != nil {
 		return nil, err
@@ -83,19 +94,11 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	server := &server{
-		mongoClient: getMongoClient(),
+		mongoClient: helpers.GetMongoClient(),
 	}
+
 	authpb.RegisterSignupServiceServer(grpcServer, server)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func getMongoClient() *mongo.Client {
-	clientOptions := options.Client().ApplyURI("mongodb://root:secret@mongo")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return client
 }

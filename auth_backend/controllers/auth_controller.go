@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/abednarchuk/grpc_auth/auth_backend/errors"
+	"github.com/abednarchuk/grpc_auth/auth_backend/helpers"
 	"github.com/abednarchuk/grpc_auth/auth_backend/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,7 +16,7 @@ import (
 )
 
 type AuthController struct {
-	client *mongo.Client
+	mongoClient *mongo.Client
 }
 
 func NewAuthController(c *mongo.Client) *AuthController {
@@ -24,7 +24,7 @@ func NewAuthController(c *mongo.Client) *AuthController {
 }
 
 func (ac *AuthController) SignUp(ctx context.Context, user *models.User) (*primitive.ObjectID, error) {
-	usersCollection := ac.client.Database("grpc-auth").Collection("users")
+	usersCollection := helpers.GetUserCollection(ac.mongoClient)
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
@@ -36,23 +36,26 @@ func (ac *AuthController) SignUp(ctx context.Context, user *models.User) (*primi
 
 	oid, ok := res.InsertedID.(primitive.ObjectID)
 	if !ok {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("Cannot convert to OID"))
+		return nil, status.Errorf(codes.Internal, "Cannot convert to OID")
 	}
 
 	return &oid, nil
 }
 
 func (ac *AuthController) CheckIfUsernameAvailable(ctx context.Context, username string) bool {
-	usersCollection := ac.client.Database("grpc-auth").Collection("users")
+	userCollection := helpers.GetUserCollection(ac.mongoClient)
+
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	res := usersCollection.FindOne(ctx, bson.D{{"username", username}})
+	res := userCollection.FindOne(ctx, bson.D{{"username", username}, {}})
 	return res.Err() == mongo.ErrNoDocuments
 }
+
 func (ac *AuthController) CheckIfEmailAvailable(ctx context.Context, email string) bool {
-	usersCollection := ac.client.Database("grpc-auth").Collection("users")
+	userCollection := helpers.GetUserCollection(ac.mongoClient)
+
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	res := usersCollection.FindOne(ctx, bson.D{{"email", email}})
+	res := userCollection.FindOne(ctx, bson.D{{"email", email}})
 	return res.Err() == mongo.ErrNoDocuments
 }
