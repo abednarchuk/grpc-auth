@@ -9,6 +9,7 @@ import (
 
 	"github.com/abednarchuk/grpc_auth/auth_backend/errors"
 	"github.com/abednarchuk/grpc_auth/auth_backend/mongohelper"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,8 +20,8 @@ type User struct {
 	Email      string             `bson:"email,omitempty"`
 	Password   string             `bson:"password,omitempty"`
 	Tokens     []Token            `bson:"tokens,omitempty"`
-	CreatedAt  time.Time          `bson:"createdAt"`
-	ModifiedAt time.Time          `bson:"modifiedAt"`
+	CreatedAt  time.Time          `bson:"createdAt,omitempty"`
+	ModifiedAt time.Time          `bson:"modifiedAt,omitempty"`
 }
 
 func (u *User) CreateUser(ctx context.Context) (primitive.ObjectID, error) {
@@ -44,10 +45,10 @@ func (u *User) CreateUser(ctx context.Context) (primitive.ObjectID, error) {
 
 func (u *User) UpdateUser(ctx context.Context) error {
 	usersCollection := mongohelper.GetUsersCollection()
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	u.ModifiedAt = time.Now()
-	_, err := usersCollection.UpdateByID(ctx, u.ID, u)
+	_, err := usersCollection.UpdateByID(ctx, u.ID, bson.D{{"$set", u}})
 	if err != nil {
 		return errors.InternalServerError
 	}
@@ -66,16 +67,5 @@ func (u *User) HashPassword() error {
 		return errors.InternalServerError
 	}
 	u.Password = string(res)
-	return nil
-}
-
-func (u *User) InsertToken(ctx context.Context, t *Token) error {
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	defer cancel()
-
-	u.Tokens = append(u.Tokens, *t)
-	if err := u.UpdateUser(ctx); err != nil {
-		return errors.InternalServerError
-	}
 	return nil
 }

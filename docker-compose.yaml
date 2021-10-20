@@ -7,6 +7,9 @@ services:
     - ./auth_backend:/auth_backend
     env_file:
       - ./auth_backend/auth_backend.env
+    depends_on:
+      - "mongo"
+      - "medium_envoy"
   mongo:
     container_name: mongo
     image: mongo:latest

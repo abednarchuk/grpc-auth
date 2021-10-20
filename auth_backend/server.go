@@ -88,8 +88,11 @@ func (s *server) SignUp(ctx context.Context, req *authpb.SignupRequest) (*authpb
 	if err != nil {
 		return nil, errors.InternalServerError
 	}
-
-	newUser.InsertToken(ctx, token)
+	userWithToken := &models.User{
+		ID:     newUser.ID,
+		Tokens: append(newUser.Tokens, *token),
+	}
+	userWithToken.UpdateUser(ctx)
 
 	return &authpb.SignupResponse{
 		User: &authpb.User{
